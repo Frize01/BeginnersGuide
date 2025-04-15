@@ -10,5 +10,6 @@ robotframework-pythonlibcore==4.4.1
 robotframework-requests==0.9.7
 robotframework-seleniumlibrary==6.7.1
 robotframework-seleniumtestability==2.1.0
+robotframework-faker==5.0.0
 selenium==4.30.0
 urllib3==2.3.0
