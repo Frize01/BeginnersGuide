@@ -13,9 +13,8 @@
             },
             "args": [
                 "--nostatusrc",
-                "--outputdir", "output", 
+                "--outputdir", "output",
                 "--variable", "BROWSER:chrome",
-                "--include", "tnr",
             ],
         }
     ]
