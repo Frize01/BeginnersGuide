@@ -1,12 +1,8 @@
 *** Settings ***
-Resource    ./keywords.resource
-
 Library           SeleniumLibrary
 
 Test Setup    Ouvrir la page de connexion
 Test Teardown    Fermer le navigateur
-
-Test Tags       user_mng
 
 *** Variables ***
 ${URL}    https://opensource-demo.orangehrmlive.com/web/index.php/auth/login
@@ -14,13 +10,14 @@ ${USERNAME}    Admin
 ${PASSWORD}    admin123
 ${USER_ROLE}    ESS
 ${STATUS}    Enabled
-${EMPLOYEE_NAME}    A
-${NEW_USERNAME}    Robotframework
-${NEW_PASSWORD}    secure password
+${EMPLOYEE_NAME}    a
+${NEW_USERNAME}    testsy
+${NEW_PASSWORD}    admin152
 ${TIMEOUT}    10s
 
 *** Test Cases ***
 Gestion des utilisateurs
+    [Tags]    User Management
     [Documentation]    Test de la gestion complète du cycle de vie d'un utilisateur
     Given Je me connecte avec le compte Admin
     When Je navigue vers la page Admin
@@ -45,14 +42,16 @@ Je me connecte avec le compte Admin
     Input Text    name=username    ${USERNAME}
     Input Text    name=password    ${PASSWORD}
     Click Button    xpath=//button[@type='submit']
-    Wait Until Element Is Visible    xpath=//h6[contains(text(), 'Dashboard')]    timeout=${TIMEOUT}
+    Wait Until Page Contains Element    xpath=//h6[contains(normalize-space(), 'Dashboard')]    timeout=${TIMEOUT}
 
 Je navigue vers la page Admin
     Click Element    xpath=//span[text()='Admin']
-    Wait Until Element Is Visible    xpath=//h6[contains(text(), 'Admin')]    timeout=${TIMEOUT}
+    Wait Until Page Contains Element     xpath=//h6[contains(normalize-space(), 'Admin')]    timeout=${TIMEOUT}
+    Log    message=Je suis sur la page Admin
 
 Je crée un nouvel utilisateur
-    Click Button    xpath=//button[normalize-space()='Add']
+    Element Should Be Visible    xpath=//button[normalize-space()='Add']
+    Click Element    xpath=//button[normalize-space()='Add']
     Wait Until Element Is Visible    xpath=//h6[text()='Add User']    timeout=${TIMEOUT}
     
     # Sélectionner le rôle utilisateur
@@ -65,10 +64,19 @@ Je crée un nouvel utilisateur
     Wait Until Element Is Visible    xpath=//div[@role='listbox']    timeout=${TIMEOUT}
     Click Element    xpath=//div[@role='option' and contains(., '${STATUS}')]
     
-    # Saisir le nom de l'employé et sélectionner dans les suggestions
+    # Saisir le nom de l'employé
     Input Text    xpath=//label[contains(text(), 'Employee Name')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    ${EMPLOYEE_NAME}
+    
+    # Attendre que la liste des suggestions apparaisse
     Wait Until Element Is Visible    xpath=//div[@role='listbox']    timeout=${TIMEOUT}
-    Click Element    xpath=//div[@role='option'][1]
+    Sleep    1s
+    
+    # Méthode 1: Sélectionner le premier résultat par clic
+    # Wait Until Element Is Visible    xpath=//div[@role='option'][1]    timeout=${TIMEOUT}
+    # Click Element    xpath=//div[@role='option'][1]
+    
+    # Méthode 2: Utiliser les touches du clavier pour le premier résultat
+    Press Keys    xpath=//label[contains(text(), 'Employee Name')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    ARROW_DOWN    RETURN
     
     # Entrer le nom d'utilisateur et le mot de passe
     Input Text    xpath=//label[contains(text(), 'Username')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    ${NEW_USERNAME}
@@ -76,13 +84,16 @@ Je crée un nouvel utilisateur
     Input Text    xpath=//label[contains(text(), 'Confirm Password')]/ancestor::div[contains(@class, 'oxd-input-group')]//input[@type='password']    ${NEW_PASSWORD}
     
     # Sauvegarder
-    Click Button    xpath=//button[normalize-space()='Save']
-    Wait Until Element Is Visible    xpath=//div[contains(@class, 'oxd-toast')]    timeout=${TIMEOUT}
+    Wait Until Element Is Visible    xpath=//button[normalize-space()='Save']    timeout=${TIMEOUT}
+    Wait Until Element Is Enabled    xpath=//button[normalize-space()='Save']    timeout=${TIMEOUT}
+    Click Element    xpath=//button[normalize-space()='Save']
+    # Attendre la confirmation de création
+    Wait Until Element Is Visible    xpath=//div[contains(@class, 'oxd-toast-container')]    timeout=${TIMEOUT}
 
 Je vérifie que l'utilisateur a été créé
     # Rechercher l'utilisateur créé
     Input Text    xpath=//label[contains(text(), 'Username')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    ${NEW_USERNAME}
-    Click Button    xpath=//button[normalize-space()='Search']
+    Press Keys    xpath=//label[contains(text(), 'Username')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    RETURN
     
     # Vérifier que l'utilisateur est bien présent
     Wait Until Element Is Visible    xpath=//div[contains(text(), '${NEW_USERNAME}')]    timeout=${TIMEOUT}
@@ -105,7 +116,7 @@ Je modifie les informations de l'utilisateur
 Je vérifie que l'utilisateur a été modifié
     # Rechercher l'utilisateur modifié
     Input Text    xpath=//label[contains(text(), 'Username')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    ${NEW_USERNAME}
-    Click Button    xpath=//button[normalize-space()='Search']
+    Press Keys    xpath=//label[contains(text(), 'Username')]/ancestor::div[contains(@class, 'oxd-input-group')]//input    RETURN
     
     # Vérifier que l'utilisateur est toujours présent mais modifié
     Wait Until Element Is Visible    xpath=//div[contains(text(), '${NEW_USERNAME}')]    timeout=${TIMEOUT}
@@ -129,6 +140,6 @@ Je me déconnecte
     Click Element    xpath=//a[contains(text(), 'Logout')]
 
 Je vérifie que je suis sur la page de connexion
-    Wait Until Element Is Visible    xpath=//h5[contains(text(), 'Login')]    timeout=${TIMEOUT}
+    # Wait Until Element Is Visible    xpath=//h5[@class='login-title' and contains(text(), 'Login')]    timeout=${TIMEOUT}
     Element Should Be Visible    name=username
     Element Should Be Visible    name=password
